@@ -24,7 +24,7 @@ class TestGroup(pygame.sprite.Group):
 class Game:
     WIDTH = 825
     HEIGHT = 580
-    FPS = 60
+    FPS = 30
     gameSurfaceVideo = cv2.VideoCapture('main_menu_background.mp4')
     __singleton = False
     @staticmethod
@@ -69,7 +69,11 @@ class Game:
         success , video_image = Game.gameSurfaceVideo.read()
         if success:
             self.game_surface = pygame.transform.scale(pygame.image.frombuffer(video_image.tobytes(), video_image.shape[1::-1], "BGR"), (Game.WIDTH,Game.HEIGHT))
-            self.screen.blit(self.game_surface, ((Game.WIDTH / 2) - (self.gameSurfaceWidth / 2),0))
+        else:
+            Game.gameSurfaceVideo.set(cv2.CAP_PROP_POS_MSEC, 0)
+            success , video_image = Game.gameSurfaceVideo.read()
+            self.game_surface = pygame.transform.scale(pygame.image.frombuffer(video_image.tobytes(), video_image.shape[1::-1], "BGR"), (Game.WIDTH,Game.HEIGHT))
+        self.screen.blit(self.game_surface, ((Game.WIDTH / 2) - (self.gameSurfaceWidth / 2),0))
     def endRender(self):
         pygame.display.flip()
         self.tick = self.clock.tick(Game.FPS) / 1000
