@@ -49,6 +49,7 @@ class Game:
         self.tick = 0
         self.gameSurfaceWidth = Game.percentX(100)
         self.gameSurfaceHeight = Game.percentY(100)
+        self.lasagnaMusic = pygame.mixer.music.load('bitch lasagna.mp3')
         # self.sideBar = pygame.transform.scale(pygame.image.load('beside_options_copy.png'),(Game.percentX(28.5), Game.HEIGHT))
         self.sideBar = pygame.transform.scale(pygame.image.load('beside_options_copy2.png').convert_alpha(),(Game.percentX(48.25), Game.HEIGHT))
         self.sideBar_rect = self.sideBar.get_rect()
@@ -79,7 +80,7 @@ class Game:
         self.exit_rect = self.exitGameOption.get_rect()
         self.trailOptionGapX = percent(self.menuOptions_rect.width, 0)
         self.trailOptionGapY = percent(self.menuOptions_rect.height, 2)
-        print(self.menuOptionsTrail_rect)
+        pygame.mixer.music.play(-1)
         # self.game_surface.fill((0,0,0,16))
         # self.game_surface_rect = self.game_surface.get_rect()
     def __enter__(self):
@@ -102,6 +103,7 @@ class Game:
             match key.type:
                 case pygame.KEYDOWN:
                     if key.dict.get('unicode') == 'y':
+                        pygame.mixer.music.rewind()
                         self.inGame = True
                         self.inMenu = False
     def menuRender(self):
@@ -138,6 +140,7 @@ class Game:
             match key.type:
                 case pygame.KEYDOWN:
                     if key.dict.get('unicode') == '\x1b':
+                        pygame.mixer.music.rewind()
                         self.inGame = False
                         self.inMenu = True
     def gameRender(self):
