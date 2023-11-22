@@ -23,9 +23,9 @@ class TestGroup(pygame.sprite.Group):
 def percent(x, y = 0):
     return x * (y / 100)
 class Game:
-    WIDTH = 1150
-    HEIGHT = 660
-    FPS = 60
+    WIDTH = 1250
+    HEIGHT = 680
+    FPS = 120
     gameSurfaceVideo = cv2.VideoCapture('main_menu_background.mp4')
     titleMenuGif = cv2.VideoCapture('title_menu.gif')
     __singleton = False
@@ -48,13 +48,13 @@ class Game:
         self.tick = 0
         self.gameSurfaceWidth = Game.percentX(100)
         self.gameSurfaceHeight = Game.percentY(100)
-        self.sideBar = pygame.transform.scale(pygame.image.load('beside_options_copy.png'),(Game.percentX(28.75), Game.HEIGHT))
+        self.sideBar = pygame.transform.scale(pygame.image.load('beside_options_copy.png'),(Game.percentX(29.75), Game.HEIGHT))
         self.sideBar_rect = self.sideBar.get_rect()
         # self.game_surface = pygame.Surface((self.gameSurfaceWidth, self.gameSurfaceHeight)).convert_alpha()
-        self.titleMenu = pygame.transform.scale(pygame.image.load('title_menu_copy.png'),(Game.percentX(34), percent(self.sideBar_rect.height, 30)))
+        self.titleMenu = pygame.transform.scale(pygame.image.load('title_menu_copy.png'),(Game.percentX(32), percent(self.sideBar_rect.height, 34)))
         self.titleMenu_rect = self.titleMenu.get_rect()
-        self.titleMenuPaddingX = Game.percentX(9)
-        self.titleMenuPaddingY = Game.percentY(6)
+        self.titleMenuPaddingX = Game.percentX(11)
+        self.titleMenuPaddingY = Game.percentY(5)
         # self.game_surface.fill((0,0,0,16))
         # self.game_surface_rect = self.game_surface.get_rect()
     def __enter__(self):
@@ -72,12 +72,10 @@ class Game:
                 self.running = False
     def startRender(self):
         success , video_image = Game.gameSurfaceVideo.read()
-        if success:
-            self.game_surface = pygame.transform.scale(pygame.image.frombuffer(video_image.tobytes(), video_image.shape[1::-1], "BGR"), (Game.WIDTH,Game.HEIGHT))
-        else:
+        if not success:
             Game.gameSurfaceVideo.set(cv2.CAP_PROP_POS_MSEC, 0)
             success , video_image = Game.gameSurfaceVideo.read()
-            self.game_surface = pygame.transform.scale(pygame.image.frombuffer(video_image.tobytes(), video_image.shape[1::-1], "BGR"), (Game.WIDTH,Game.HEIGHT))
+        self.game_surface = pygame.transform.scale(pygame.image.frombuffer(video_image.tobytes(), video_image.shape[1::-1], "BGR"), (Game.WIDTH,Game.HEIGHT + Game.percentY(1)))
         self.game_surface.blit(self.sideBar, (0, 0))
         
         # success , gif_image = Game.titleMenuGif.read()
