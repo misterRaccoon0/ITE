@@ -105,7 +105,7 @@ class Game:
         self.menuGroup = MenuGroup(self.howToPlaySprite, self.exitGameOptionSprite, self.settingsOptionSprite)
         pygame.mixer.music.load('bitch lasagna.mp3')
         self.optionOnHover = False
-        # pygame.mixer.music.play(-1)
+        pygame.mixer.music.play(-1)
         # self.game_surface.fill((0,0,0,16))
         # self.game_surface_rect = self.game_surface.get_rect()
     def __enter__(self):
@@ -122,16 +122,15 @@ class Game:
             if key.type == pygame.QUIT:
                 self.running = False
     def menuEventHandler(self):
-        i = 0
         for sprite in self.menuGroup.sprites():
             if sprite.rect.move(self.menuOptionsPoints).collidepoint(pygame.mouse.get_pos()):
                 if not self.optionOnHover:
                     self.optionOnHover = True
                     overlay = pygame.Surface((sprite.rect.width, sprite.rect.height)).convert_alpha()
-                    overlay.set_alpha(50)
+                    overlay.set_alpha(60)
                     sprite.image.blit(sprite.option_image,(0,0))
                     sprite.image.blit((overlay),(0,0))
-                    overlay.set_alpha(0)
+                    
                     break
             else:
                 self.optionOnHover = False
