@@ -89,7 +89,7 @@ class Game:
         self.settingsOptionRawImage = pygame.image.load('settings_option_copy.png').convert_alpha()
         howToPlayImage = pygame.image.load('how_to_play_option_copy.png').convert_alpha()
         exitGameOption = pygame.image.load('exit_game_option_copy.png').convert_alpha()
-        self.optionSize = (percent(self.menuOptionMaxWidth, 75), percent(self.menuOptions_rect.height, 21.25))
+        self.optionSize = (percent(self.menuOptionMaxWidth, 77.5), percent(self.menuOptions_rect.height, 21.5))
         self.settingsOptionImage = pygame.transform.scale(self.settingsOptionRawImage, self.optionSize).convert_alpha()
         self.settings_rect = self.settingsOptionImage.get_rect()
         self.howToPlayImage = pygame.transform.scale(howToPlayImage, self.optionSize).convert_alpha()
@@ -101,7 +101,7 @@ class Game:
         self.settingsOptionSprite = OptionSprite(self.settingsOptionImage,*(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,0))
         self.howToPlaySprite = OptionSprite(self.howToPlayImage,*(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.trailOptionGapY))
         self.exitGameOptionSprite = OptionSprite(self.exitGameOption,*(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.howToPlay_rect.height + self.trailOptionGapY + percent(self.menuOptions_rect.height, 2.375)))
-        self.menuOptionsPoints = (0, self.titleMenu_rect.height * 1.66)
+        self.menuOptionsPoints = (0, self.titleMenu_rect.height * 1.68)
         self.menuGroup = MenuGroup(self.howToPlaySprite, self.exitGameOptionSprite, self.settingsOptionSprite)
         pygame.mixer.music.load('bitch lasagna.mp3')
         self.optionOnHover = False
@@ -127,7 +127,7 @@ class Game:
                 if not self.optionOnHover:
                     self.optionOnHover = True
                     overlay = pygame.Surface((sprite.rect.width, sprite.rect.height)).convert_alpha()
-                    overlay.set_alpha(60)
+                    overlay.set_alpha(75)
                     sprite.image.blit(sprite.option_image,(0,0))
                     sprite.image.blit((overlay),(0,0))
                     
