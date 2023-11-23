@@ -20,6 +20,25 @@ class TestGroup(pygame.sprite.Group):
     def __init__(self, *sprites):
         super().__init__(*sprites)
 
+class OptionSprite(pygame.sprite.Sprite):
+    def __init__(self, /, image, x, y, *groups):
+        super().__init__(groups)
+        image_rect = image.get_rect()
+        self.image = pygame.Surface((image_rect.width, image_rect.height))
+        self.option_image = image
+        self.image.blit(image,(0,0))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+    @classmethod
+    def fromSurface(cls, surface):
+        rect = surface.get_rect()
+        return cls(surface, rect.width, rect.height, rect.x, rect.y)
+class MenuGroup(pygame.sprite.Group):
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+    
+
 def percent(x, y = 0):
     return x * (y / 100)
 class Game:
@@ -49,7 +68,6 @@ class Game:
         self.tick = 0
         self.gameSurfaceWidth = Game.percentX(100)
         self.gameSurfaceHeight = Game.percentY(100)
-        self.lasagnaMusic = pygame.mixer.music.load('bitch lasagna.mp3')
         # self.sideBar = pygame.transform.scale(pygame.image.load('beside_options_copy.png'),(Game.percentX(28.5), Game.HEIGHT))
         self.sideBar = pygame.transform.scale(pygame.image.load('beside_options_copy2.png').convert_alpha(),(Game.percentX(48.25), Game.HEIGHT))
         self.sideBar_rect = self.sideBar.get_rect()
@@ -66,21 +84,28 @@ class Game:
         menuOptionsTrail = pygame.image.load('option_trail_copy.png').convert_alpha()
         self.menuOptionsTrail_widthPercent = 35
         self.menuOptionsTrail_borderBoxWidth = percent(self.menuOptionMaxWidth, self.menuOptionsTrail_widthPercent)
-        self.menuOptionsTrail = pygame.transform.scale(menuOptionsTrail, (percent(self.menuOptionMaxWidth, self.menuOptionsTrail_widthPercent + 10), percent(self.menuOptions_rect.height, 16.5)))
+        self.menuOptionsTrail = pygame.transform.scale(menuOptionsTrail, (percent(self.menuOptionMaxWidth, self.menuOptionsTrail_widthPercent + 0.125), percent(self.menuOptions_rect.height, 16.5)))
         self.menuOptionsTrail_rect = self.menuOptionsTrail.get_rect()
-        settingsOptionImage = pygame.image.load('settings_option_copy.png').convert_alpha()
+        self.settingsOptionRawImage = pygame.image.load('settings_option_copy.png').convert_alpha()
         howToPlayImage = pygame.image.load('how_to_play_option_copy.png').convert_alpha()
         exitGameOption = pygame.image.load('exit_game_option_copy.png').convert_alpha()
-        optionSize = (percent(self.menuOptionMaxWidth, 75), percent(self.menuOptions_rect.height, 21.25))
-        self.settingsOptionImage = pygame.transform.scale(settingsOptionImage, optionSize)
+        self.optionSize = (percent(self.menuOptionMaxWidth, 75), percent(self.menuOptions_rect.height, 21.25))
+        self.settingsOptionImage = pygame.transform.scale(self.settingsOptionRawImage, self.optionSize).convert_alpha()
         self.settings_rect = self.settingsOptionImage.get_rect()
-        self.howToPlayImage = pygame.transform.scale(howToPlayImage, optionSize)
+        self.howToPlayImage = pygame.transform.scale(howToPlayImage, self.optionSize).convert_alpha()
         self.howToPlay_rect = self.howToPlayImage.get_rect()
-        self.exitGameOption = pygame.transform.scale(exitGameOption, optionSize)
+        self.exitGameOption = pygame.transform.scale(exitGameOption, self.optionSize).convert_alpha()
         self.exit_rect = self.exitGameOption.get_rect()
         self.trailOptionGapX = percent(self.menuOptions_rect.width, 0)
         self.trailOptionGapY = percent(self.menuOptions_rect.height, 2)
-        pygame.mixer.music.play(-1)
+        self.settingsOptionSprite = OptionSprite(self.settingsOptionImage,*(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,0))
+        self.howToPlaySprite = OptionSprite(self.howToPlayImage,*(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.trailOptionGapY))
+        self.exitGameOptionSprite = OptionSprite(self.exitGameOption,*(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.howToPlay_rect.height + self.trailOptionGapY + percent(self.menuOptions_rect.height, 2.375)))
+        self.menuOptionsPoints = (0, self.titleMenu_rect.height * 1.66)
+        self.menuGroup = MenuGroup(self.howToPlaySprite, self.exitGameOptionSprite, self.settingsOptionSprite)
+        pygame.mixer.music.load('bitch lasagna.mp3')
+        self.optionOnHover = False
+        # pygame.mixer.music.play(-1)
         # self.game_surface.fill((0,0,0,16))
         # self.game_surface_rect = self.game_surface.get_rect()
     def __enter__(self):
@@ -97,6 +122,22 @@ class Game:
             if key.type == pygame.QUIT:
                 self.running = False
     def menuEventHandler(self):
+        i = 0
+        for sprite in self.menuGroup.sprites():
+            if sprite.rect.move(self.menuOptionsPoints).collidepoint(pygame.mouse.get_pos()):
+                if not self.optionOnHover:
+                    self.optionOnHover = True
+                    overlay = pygame.Surface((sprite.rect.width, sprite.rect.height)).convert_alpha()
+                    overlay.set_alpha(50)
+                    sprite.image.blit(sprite.option_image,(0,0))
+                    sprite.image.blit((overlay),(0,0))
+                    overlay.set_alpha(0)
+                    break
+            else:
+                self.optionOnHover = False
+                sprite.image.fill((0,0,0,0))
+                sprite.image.blit(sprite.option_image, (0,0))
+
         keys = pygame.event.get()
         self.windowEventHandler(keys)
         for key in keys:
@@ -122,14 +163,15 @@ class Game:
         self.screen.blit(self.game_surface, ((Game.WIDTH / 2) - (self.gameSurfaceWidth / 2) + (self.sideBar_rect.width / 2) ,0))
         self.surface.blit(self.sideBar, (0, 0))
         self.surface.blit(self.titleMenu, ((self.sideBar_rect.width / 4) - (self.sideBar_rect.width / 3) + self.titleMenuPaddingX, percent(self.sideBar_rect.height, 8)+ self.titleMenuPaddingY))
-        self.surface.blit(self.menuOptions, (0, self.titleMenu_rect.height * 1.66))
+        self.surface.blit(self.menuOptions, self.menuOptionsPoints)
 
         self.menuOptions.blit(self.menuOptionsTrail,(0,0 + percent(self.menuOptions_rect.height, 2.375)))
-        self.menuOptions.blit(self.settingsOptionImage,(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,0))
+        # self.menuOptions.blit(self.settingsOptionImage,(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,0))
         self.menuOptions.blit(self.menuOptionsTrail,(0,self.settings_rect.y + self.settings_rect.height + self.trailOptionGapY + percent(self.menuOptions_rect.height, 2.375)))
-        self.menuOptions.blit(self.howToPlayImage,(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.trailOptionGapY))
+        # self.menuOptions.blit(self.howToPlayImage,(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.trailOptionGapY))
         self.menuOptions.blit(self.menuOptionsTrail,(0,self.settings_rect.y + self.settings_rect.height + self.howToPlay_rect.height + self.trailOptionGapY + (percent(self.menuOptions_rect.height, 2.375) * 2)))
-        self.menuOptions.blit(self.exitGameOption,(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.howToPlay_rect.height + self.trailOptionGapY + percent(self.menuOptions_rect.height, 2.375)))
+        # self.menuOptions.blit(self.exitGameOption,(self.menuOptionsTrail_borderBoxWidth + self.trailOptionGapX,self.settings_rect.y + self.settings_rect.height + self.howToPlay_rect.height + self.trailOptionGapY + percent(self.menuOptions_rect.height, 2.375)))
+        self.menuGroup.draw(self.menuOptions)
     def endRender(self):
         pygame.display.flip()
         self.tick = self.clock.tick(Game.FPS) / 1000
